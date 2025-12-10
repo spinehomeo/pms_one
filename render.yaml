@@ -1,0 +1,64 @@
+# Render manifest for deploying the backend
+# - Web service builds from `backend/Dockerfile` using Render's Docker builds
+# - Managed Postgres database for the application
+# - A manual job to run alembic migrations (run after deploy)
+
+services:
+  - type: web
+    name: pms-backend
+    env: docker
+    branch: backend
+    plan: starter
+    region: oregon
+    dockerfilePath: backend/Dockerfile
+    # Optional build/start commands are not required for Docker builds
+    # Expose environment variables (placeholders) — set real values in Render dashboard
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: SECRET_KEY
+        # value removed; provide via Render secret named `SECRET_KEY`
+        value: ""
+      - key: FIRST_SUPERUSER
+        # value removed; provide via Render secret named `FIRST_SUPERUSER`
+        value: "admin@example.com"
+      - key: FIRST_SUPERUSER_PASSWORD
+        # value removed; provide via Render secret named `FIRST_SUPERUSER_PASSWORD`
+        value: "spinehomeo"
+      - key: SENTRY_DSN
+        # value removed; provide via Render secret named `SENTRY_DSN`
+        value: ""
+      - key: DATABASE_URL
+        # Provided by the managed Postgres instance or via Render secret named `DATABASE_URL`
+        value:"postgresql://neondb_owner:npg_KXtcC8uzn5Da@ep-morning-shape-a1ozucn2-pooler.ap-southeast-1.aws.neon.tech/spinehomeo_database?sslmode=require&channel_binding=require"
+
+databases:
+  - name: pms-db
+    engine: postgres
+    version: "14"
+    plan: free
+
+secrets:
+  - name: SECRET_KEY
+  - name: FIRST_SUPERUSER
+  - name: SENTRY_DSN
+  - name: DATABASE_URL
+  - name: FIRST_SUPERUSER_PASSWORD
+
+jobs:
+  - name: run-migrations
+    type: job
+    env: docker
+    plan: starter
+    region: oregon
+    dockerfilePath: backend/Dockerfile
+    # This job is manual by default; run it from the Render dashboard or CLI after deploy
+    command: >
+      bash -lc "cd backend && alembic upgrade head"
+
+# Notes for deployment:
+# - After creating the Postgres database on Render the service will expose a connection
+#   string as an environment variable (Render provides DATABASE_URL). Make sure the
+#   backend `config.py` reads that env var or set `SQLALCHEMY_DATABASE_URI` accordingly.
+# - Replace `SECRET_KEY` and other placeholders with Render secrets (Dashboard → Secrets)
+# - Run the `run-migrations` job once after deploy to create/update DB schema.
