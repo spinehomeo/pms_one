@@ -6,10 +6,10 @@
 services:
   - type: web
     name: pms-backend
-    env: docker
     branch: backend
-    plan: starter
+    plan: free
     region: oregon
+    runtime: docker
     dockerfilePath: backend/Dockerfile
     # Optional build/start commands are not required for Docker builds
     # Expose environment variables (placeholders) — set real values in Render dashboard
@@ -34,8 +34,6 @@ services:
 
 databases:
   - name: pms-db
-    engine: postgres
-    version: "14"
     plan: free
 
 secrets:
@@ -54,7 +52,7 @@ jobs:
     dockerfilePath: backend/Dockerfile
     # This job is manual by default; run it from the Render dashboard or CLI after deploy
     command: >
-      bash -lc "cd backend && alembic upgrade head"
+      bash -lc "cd backend && uv run fastapi dev app/main --reload"
 
 # Notes for deployment:
 # - After creating the Postgres database on Render the service will expose a connection
