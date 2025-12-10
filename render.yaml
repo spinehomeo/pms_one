@@ -30,7 +30,7 @@ services:
         value: ""
       - key: DATABASE_URL
         # Provided by the managed Postgres instance or via Render secret named `DATABASE_URL`
-        value:"postgresql://neondb_owner:npg_KXtcC8uzn5Da@ep-morning-shape-a1ozucn2-pooler.ap-southeast-1.aws.neon.tech/spinehomeo_database?sslmode=require&channel_binding=require"
+        value: "postgresql://neondb_owner:npg_KXtcC8uzn5Da@ep-morning-shape-a1ozucn2-pooler.ap-southeast-1.aws.neon.tech/spinehomeo_database?sslmode=require&channel_binding=require"
 
 databases:
   - name: pms-db
